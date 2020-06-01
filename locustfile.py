@@ -89,7 +89,7 @@ class LoadTest1(TaskSequence):
     """
     Scenario where a stock admin creates an item and adds stock to it
     """
-    item_ids: List[int]
+    item_ids: List[str]
 
     def on_start(self):
         """ on_start is called when a Locust start before any task is scheduled """
@@ -110,19 +110,19 @@ class LoadTest2(TaskSequence):
     """
     Scenario where a user checks out an order with one item inside that an admin has added stock to before
     """
-    item_ids: List[int]
-    user_id: int
-    order_id: int
+    item_ids: List[str]
+    user_id: str
+    order_id: str
 
     def on_start(self):
         self.item_ids = list()
-        self.user_id = -1
-        self.order_id = -1
+        self.user_id = ""
+        self.order_id = ""
 
     def on_stop(self):
         self.item_ids = list()
-        self.user_id = -1
-        self.order_id = -1
+        self.user_id = ""
+        self.order_id = ""
 
     @seq_task(1)
     def admin_creates_item(self): create_item(self)
@@ -150,19 +150,19 @@ class LoadTest3(TaskSequence):
     """
     Scenario where a user checks out an order with two items inside that an admin has added stock to before
     """
-    item_ids: List[int]
-    user_id: int
-    order_id: int
+    item_ids: List[str]
+    user_id: str
+    order_id: str
 
     def on_start(self):
         self.item_ids = list()
-        self.user_id = -1
-        self.order_id = -1
+        self.user_id = ""
+        self.order_id = ""
 
     def on_stop(self):
         self.item_ids = list()
-        self.user_id = -1
-        self.order_id = -1
+        self.user_id = ""
+        self.order_id = ""
 
     @seq_task(1)
     def admin_creates_item1(self): create_item(self)
@@ -199,19 +199,19 @@ class LoadTest4(TaskSequence):
     """
     Scenario where a user adds an item to an order, regrets it and removes it and then adds it back and checks out
     """
-    item_ids: List[int]
-    user_id: int
-    order_id: int
+    item_ids: List[str]
+    user_id: str
+    order_id: str
 
     def on_start(self):
         self.item_ids = list()
-        self.user_id = -1
-        self.order_id = -1
+        self.user_id = ""
+        self.order_id = ""
 
     def on_stop(self):
         self.item_ids = list()
-        self.user_id = -1
-        self.order_id = -1
+        self.user_id = ""
+        self.order_id = ""
 
     @seq_task(1)
     def admin_creates_item(self): create_item(self)
@@ -245,19 +245,19 @@ class LoadTest5(TaskSequence):
     """
     Scenario that is supposed to fail because the second item does not have enough stock
     """
-    item_ids: List[int]
-    user_id: int
-    order_id: int
+    item_ids: List[str]
+    user_id: str
+    order_id: str
 
     def on_start(self):
         self.item_ids = list()
-        self.user_id = -1
-        self.order_id = -1
+        self.user_id = ""
+        self.order_id = ""
 
     def on_stop(self):
         self.item_ids = list()
-        self.user_id = -1
-        self.order_id = -1
+        self.user_id = ""
+        self.order_id = ""
 
     @seq_task(1)
     def admin_creates_item1(self): create_item(self)
@@ -297,19 +297,19 @@ class LoadTest6(TaskSequence):
     """
     Scenario that is supposed to fail because the user does not have enough credit
     """
-    item_ids: List[int]
-    user_id: int
-    order_id: int
+    item_ids: List[str]
+    user_id: str
+    order_id: str
 
     def on_start(self):
         self.item_ids = list()
-        self.user_id = -1
-        self.order_id = -1
+        self.user_id = ""
+        self.order_id = ""
 
     def on_stop(self):
         self.item_ids = list()
-        self.user_id = -1
-        self.order_id = -1
+        self.user_id = ""
+        self.order_id = ""
 
     @seq_task(1)
     def admin_creates_item(self): create_item(self)
