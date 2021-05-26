@@ -86,6 +86,6 @@ def verify_systems_consistency():
     server_side_items_bought: int = 100 - list(iis.values())[0]
     logger.info(f"Stock service inconsistencies in the database: {server_side_items_bought - NUMBER_0F_ITEMS}")
     logged_user_credit: int = sum(pus.values())
-    logger.info(f"User service inconsistencies in the logs: {abs(CORRECT_USER_STATE - logged_user_credit)}")
+    logger.info(f"Payment service inconsistencies in the logs: {abs(CORRECT_USER_STATE - logged_user_credit)}")
     server_side_user_credit: int = sum(list(uic.values()))
-    logger.info(f"User service inconsistencies in the database: {abs(CORRECT_USER_STATE - server_side_user_credit)}")
+    logger.info(f"Payment service inconsistencies in the database: {abs(CORRECT_USER_STATE - server_side_user_credit)}")
