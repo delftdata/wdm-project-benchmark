@@ -3,6 +3,7 @@ import random
 import logging
 import json
 import os
+from tempfile import gettempdir
 from typing import List, Union
 
 from locust import HttpUser, SequentialTaskSet, task, constant
@@ -64,8 +65,9 @@ class ConsistencyTest(SequentialTaskSet):
     def __init__(self, parent):
         super().__init__(parent)
         self.local_random = random.Random()
-        self.user_ids = load_pickle_file('tmp/user_ids.pkl')
-        tmp_item_ids = load_pickle_file('tmp/item_ids.pkl')
+        tmp_folder_path: str = os.path.join(gettempdir(), 'wdm_consistency_test')
+        self.user_ids = load_pickle_file(f'{tmp_folder_path}/user_ids.pkl')
+        tmp_item_ids = load_pickle_file(f'{tmp_folder_path}/item_ids.pkl')
         self.item_ids = tmp_item_ids if type(tmp_item_ids) is list else [str(tmp_item_ids)]
 
     def on_start(self):
