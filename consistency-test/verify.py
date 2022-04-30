@@ -1,5 +1,4 @@
 import asyncio
-import pickle
 import re
 import os
 import json
@@ -23,12 +22,6 @@ with open(os.path.join('..', 'urls.json')) as f:
     ORDER_URL = urls['ORDER_URL']
     PAYMENT_URL = urls['PAYMENT_URL']
     STOCK_URL = urls['STOCK_URL']
-
-
-def load_pickle_file(file_name: str) -> Union[List[str], str]:
-    with open(file_name, 'rb') as pkl_file:
-        var = pickle.load(pkl_file)
-        return var
 
 
 async def get_and_get_field(session, url, field, key):
@@ -57,9 +50,9 @@ async def get_item_stock_dict(session, item_id_list: Union[List[str], str]) -> D
     return dict(item_id_stock)
 
 
-def get_prior_user_state(tmp_dir: str):
+def get_prior_user_state(user_ids):
     user_state = dict()
-    for user_id in load_pickle_file(f'{tmp_dir}/user_ids.pkl'):
+    for user_id in user_ids:
         user_state[str(user_id)] = USER_STARTING_CREDIT
     return user_state
 
@@ -80,11 +73,11 @@ def parse_log(tmp_dir, prior_user_state: Dict[str, int]):
     return prior_user_state
 
 
-async def verify_systems_consistency(tmp_dir: str):
-    pus: dict = parse_log(tmp_dir, get_prior_user_state(tmp_dir))
+async def verify_systems_consistency(tmp_dir: str, item_ids, user_ids):
+    pus: dict = parse_log(tmp_dir, get_prior_user_state(user_ids))
     async with aiohttp.ClientSession() as session:
-        uic: dict = await get_user_credit_dict(session, load_pickle_file(f'{tmp_dir}/user_ids.pkl'))
-        iis: dict = await get_item_stock_dict(session, load_pickle_file(f'{tmp_dir}/item_ids.pkl'))
+        uic: dict = await get_user_credit_dict(session, user_ids)
+        iis: dict = await get_item_stock_dict(session, item_ids)
     server_side_items_bought: int = (NUMBER_0F_ITEMS * ITEM_STARTING_STOCK) - list(iis.values())[0]
     logger.info(f"Stock service inconsistencies in the database: "
                 f"{server_side_items_bought - (NUMBER_0F_ITEMS * ITEM_STARTING_STOCK)}")

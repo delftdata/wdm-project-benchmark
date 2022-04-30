@@ -1,9 +1,8 @@
 import asyncio
-import pickle
 import json
 import logging
 import os
-from typing import Union, List
+from typing import List
 
 import aiohttp
 
@@ -68,20 +67,14 @@ async def create_users(session, number_of_users: int, credit: int) -> List[str]:
     return user_ids
 
 
-def write_pickle(file_name: str, var: Union[List[str], str]):
-    with open(file_name, 'wb') as output:
-        pickle.dump(var, output, pickle.HIGHEST_PROTOCOL)
-
-
-async def populate_databases(tmp_dir: str):
+async def populate_databases():
     async with aiohttp.ClientSession() as session:
         logger.info("Creating items ...")
-        item_id: List[str] = await create_items(session, NUMBER_0F_ITEMS,
-                                                ITEM_STARTING_STOCK, ITEM_PRICE)  # create item with 100 stock
-        write_pickle(f'{tmp_dir}/item_ids.pkl', item_id)
+        item_ids: List[str] = await create_items(session, NUMBER_0F_ITEMS,
+                                                 ITEM_STARTING_STOCK, ITEM_PRICE)  # create item with 100 stock
         logger.info("Items created")
 
         logger.info("Creating users ...")
         user_ids: List[str] = await create_users(session, NUMBER_OF_USERS, USER_STARTING_CREDIT)  # create 1000 users
-        write_pickle(f'{tmp_dir}/user_ids.pkl', user_ids)
         logger.info("Users created")
+    return item_ids, user_ids
