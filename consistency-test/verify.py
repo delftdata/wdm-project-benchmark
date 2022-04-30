@@ -1,15 +1,16 @@
-import pickle
+import asyncio
 import re
 import os
 import json
-import requests
 import logging
-from multiprocessing.pool import ThreadPool
 from typing import Union, List, Dict, Tuple
 
-from populate import NUMBER_0F_ITEMS
+import aiohttp
 
-CORRECT_USER_STATE = 900
+from populate import NUMBER_0F_ITEMS, ITEM_STARTING_STOCK, ITEM_PRICE, NUMBER_OF_USERS, USER_STARTING_CREDIT
+
+
+CORRECT_USER_STATE = (NUMBER_OF_USERS * USER_STARTING_CREDIT) - (NUMBER_0F_ITEMS * ITEM_STARTING_STOCK * ITEM_PRICE)
 
 logging.basicConfig(level=logging.INFO,
                     format='%(levelname)s - %(asctime)s - %(name)s - %(message)s',
@@ -23,47 +24,42 @@ with open(os.path.join('..', 'urls.json')) as f:
     STOCK_URL = urls['STOCK_URL']
 
 
-def load_pickle_file(file_name: str) -> Union[List[str], str]:
-    with open(file_name, 'rb') as pkl_file:
-        var = pickle.load(pkl_file)
-        return var
+async def get_and_get_field(session, url, field, key):
+    async with session.get(url) as resp:
+        jsn = await resp.json()
+        return key, jsn[field]
 
 
-def get_user_credit(user_id: str) -> Tuple[str, int]:
-    credit = int(requests.get(f"{PAYMENT_URL}/payment/find_user/{user_id}", json={}).json()['credit'])
-    return user_id, credit
+async def get_user_credit_dict(session, user_id_list: List[str]) -> Dict[str, int]:
+    tasks = []
+    # Get credit
+    for user_id in user_id_list:
+        create_item_url = f"{PAYMENT_URL}/payment/find_user/{user_id}"
+        tasks.append(asyncio.ensure_future(get_and_get_field(session, create_item_url, 'credit', user_id)))
+    user_id_credit: List[Tuple[str, int]] = await asyncio.gather(*tasks)
+    return dict(user_id_credit)
 
 
-def get_user_credit_dict(user_id_list: List[str]) -> Dict[str, int]:
-    with ThreadPool(10) as pool:
-        user_id_credit = dict(pool.map(get_user_credit, user_id_list))
-    return user_id_credit
+async def get_item_stock_dict(session, item_id_list: Union[List[str], str]) -> Dict[str, int]:
+    tasks = []
+    # Get stock
+    for item_id in item_id_list:
+        create_item_url = f"{STOCK_URL}/stock/find/{item_id}"
+        tasks.append(asyncio.ensure_future(get_and_get_field(session, create_item_url, 'stock', item_id)))
+    item_id_stock: List[Tuple[str, int]] = await asyncio.gather(*tasks)
+    return dict(item_id_stock)
 
 
-def get_item_stock(item_id: str) -> Tuple[str, int]:
-    stock = int(requests.get(f"{STOCK_URL}/stock/find/{item_id}", json={}).json()['stock'])
-    return item_id, stock
-
-
-def get_item_stock_dict(item_id_list: Union[List[str], str]) -> Dict[str, int]:
-    if type(item_id_list) is list:
-        with ThreadPool(10) as pool:
-            item_id_stock = dict(pool.map(get_item_stock, item_id_list))
-    else:
-        item_id_stock = dict([get_item_stock(item_id_list)])
-    return item_id_stock
-
-
-def get_prior_user_state():
+def get_prior_user_state(user_ids):
     user_state = dict()
-    for user_id in load_pickle_file('tmp/user_ids.pkl'):
-        user_state[str(user_id)] = 1
+    for user_id in user_ids:
+        user_state[str(user_id)] = USER_STARTING_CREDIT
     return user_state
 
 
-def parse_log(prior_user_state: Dict[str, int]):
+def parse_log(tmp_dir, prior_user_state: Dict[str, int]):
     i = 0
-    with open('tmp/consistency-test.log', 'r') as log_file:
+    with open(f'{tmp_dir}/consistency-test.log', 'r') as log_file:
         log_file = log_file.readlines()
         for log in log_file:
             if log.endswith('__OUR_LOG__\n'):
@@ -72,19 +68,19 @@ def parse_log(prior_user_state: Dict[str, int]):
                 status = m.group(3)
                 if status == 'SUCCESS':
                     i += 1
-                    if prior_user_state[user_id] == 0:
-                        logger.info("NEGATIVE")
-                    prior_user_state[user_id] = prior_user_state[user_id] - 1
-    logger.info(f"Stock service inconsistencies in the logs: {i - NUMBER_0F_ITEMS}")
+                    prior_user_state[user_id] = prior_user_state[user_id] - ITEM_PRICE
+    logger.info(f"Stock service inconsistencies in the logs: {i - (NUMBER_0F_ITEMS * ITEM_STARTING_STOCK)}")
     return prior_user_state
 
 
-def verify_systems_consistency():
-    pus: dict = parse_log(get_prior_user_state())
-    uic: dict = get_user_credit_dict(load_pickle_file('tmp/user_ids.pkl'))
-    iis: dict = get_item_stock_dict(load_pickle_file('tmp/item_ids.pkl'))
-    server_side_items_bought: int = 100 - list(iis.values())[0]
-    logger.info(f"Stock service inconsistencies in the database: {server_side_items_bought - NUMBER_0F_ITEMS}")
+async def verify_systems_consistency(tmp_dir: str, item_ids, user_ids):
+    pus: dict = parse_log(tmp_dir, get_prior_user_state(user_ids))
+    async with aiohttp.ClientSession() as session:
+        uic: dict = await get_user_credit_dict(session, user_ids)
+        iis: dict = await get_item_stock_dict(session, item_ids)
+    server_side_items_bought: int = (NUMBER_0F_ITEMS * ITEM_STARTING_STOCK) - list(iis.values())[0]
+    logger.info(f"Stock service inconsistencies in the database: "
+                f"{server_side_items_bought - (NUMBER_0F_ITEMS * ITEM_STARTING_STOCK)}")
     logged_user_credit: int = sum(pus.values())
     logger.info(f"Payment service inconsistencies in the logs: {abs(CORRECT_USER_STATE - logged_user_credit)}")
     server_side_user_credit: int = sum(list(uic.values()))

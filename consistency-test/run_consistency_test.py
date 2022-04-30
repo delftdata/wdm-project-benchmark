@@ -1,12 +1,12 @@
+import asyncio
 import os
 import shutil
-import subprocess
 import logging
+from tempfile import gettempdir
 
 from verify import verify_systems_consistency
 from populate import populate_databases
-
-STRESS_TEST_EXECUTION_TIME = 30  # Seconds
+from stress import stress
 
 logging.basicConfig(level=logging.INFO,
                     format='%(levelname)s - %(asctime)s - %(name)s - %(message)s',
@@ -16,28 +16,28 @@ logger = logging.getLogger("Consistency test")
 
 # Create the tmp folder to store the logs, the users and the stock
 logger.info("Creating tmp folder...")
-current_file_directory: str = os.path.dirname(os.path.realpath(__file__))
-tmp_folder_path: str = os.path.join(current_file_directory, 'tmp')
-tmp_folder_exists: bool = os.path.isdir(tmp_folder_path)
+tmp_folder_path: str = os.path.join(gettempdir(), 'wdm_consistency_test')
 
-if tmp_folder_exists:
+if os.path.isdir(tmp_folder_path):
     shutil.rmtree(tmp_folder_path)
+
 os.mkdir(tmp_folder_path)
 logger.info("tmp folder created")
 
 # Populate the payment and stock databases
 logger.info("Populating the databases...")
-populate_databases()
+item_ids, user_ids = asyncio.run(populate_databases())
 logger.info("Databases populated")
 
 # Run the load test
 logger.info("Starting the load test...")
-subprocess.call(["locust", "-f", "locustfile.py", "--host=''", "--logfile=tmp/consistency-test.log", "--headless",
-                 "-u", "1000", "-r", "1000", f"--run-time={STRESS_TEST_EXECUTION_TIME}s"],
-                stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+asyncio.run(stress(item_ids, user_ids))
 logger.info("Load test completed")
 
 # Verify the systems' consistency
 logger.info("Starting the consistency evaluation...")
-verify_systems_consistency()
+asyncio.run(verify_systems_consistency(tmp_folder_path, item_ids, user_ids))
 logger.info("Consistency evaluation completed")
+
+if os.path.isdir(tmp_folder_path):
+    shutil.rmtree(tmp_folder_path)
