@@ -50,8 +50,8 @@ In the provided consistency test we first populate the databases with 100 items 
 and 1000 users that have 1 credit. 
 
 Then we concurrently send 1000 checkouts of 1 item with random user/item combinations.
-The probabilities say that only 10% of the checkouts will succeed, and the expected state should be 0 stock across all 
-items and 100 credits subtracted from different users.  
+If everything goes well only 10% of the checkouts will succeed, and the expected state should be 0 stock across all 
+items and 100 credits subtracted across different users.  
 
 Finally, the measurements are done in two phases:
 1) Using logs to see whether the service sent the correct message to the clients

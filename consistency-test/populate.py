@@ -15,7 +15,7 @@ NUMBER_0F_ITEMS = 1
 ITEM_STARTING_STOCK = 100
 ITEM_PRICE = 1
 NUMBER_OF_USERS = 1000
-USER_STARTING_CREDIT = 10000000
+USER_STARTING_CREDIT = 1
 
 with open(os.path.join('..', 'urls.json')) as f:
     urls = json.load(f)
