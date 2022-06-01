@@ -38,6 +38,18 @@ YOU CAN ALSO CREATE YOUR OWN SCENARIOS AS YOU LIKE
 * Go to `http://localhost:8089/`
 
 
+### Stress Test Kubernetes 
+
+The tasks are the same as the `stress-test` and can be found in `stress-test-k8s/docker-image/locust-tasks`.
+This folder is adapted from Google's [Distributed load testing using Google Kubernetes Engine](https://cloud.google.com/architecture/distributed-load-testing-using-gke)
+and original repo is [here](https://github.com/GoogleCloudPlatform/distributed-load-testing-using-kubernetes). 
+Detailed instructions are in Google's blog post.
+If you want to deploy locally or with a different cloud provider the lines that you have to change are:
+1) In `stress-test-k8s/kubernetes-config/locust-master-controller.yaml` line 34 you could add a dockerHub image that you
+published yourself and in line 39 set `TARGET_HOST` to the IP of your API gateway. 
+2) Change the same configuration parameters in the `stress-test-k8s/kubernetes-config/locust-worker-controller.yaml`
+
+
 ### Using the Locust UI
 Fill in an appropriate number of users that you want to test with. 
 The hatch rate is how many users will spawn per second 
