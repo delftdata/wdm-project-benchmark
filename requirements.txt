@@ -1,2 +1,2 @@
-locust==2.8.6
-aiohttp==3.8.1
+locust==2.15.1
+aiohttp==3.8.4

@@ -1,7 +1,7 @@
 # Instructions
 
 ## Setup 
-* Install python 3.6 or greater (tested with 3.9 and 3.10)
+* Install python 3.8 or greater (tested with 3.11)
 * Install the required packages using: `pip install -r requirements.txt`
 * Change the URLs and ports in the `urls.json` file with your own
 

@@ -353,7 +353,8 @@ class LoadTest6(SequentialTaskSet):
 
 
 class MicroservicesUser(HttpUser):
-    wait_time = between(1, 3)  # how much time a user waits (seconds) to run another TaskSequence
+    # how much time a user waits (seconds) to run another TaskSequence
+    wait_time = between(1, 3)
     # [SequentialTaskSet]: [weight of the SequentialTaskSet]
     tasks = {
         LoadTest1: 5,
