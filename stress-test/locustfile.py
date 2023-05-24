@@ -15,7 +15,7 @@ with open(os.path.join('..', 'urls.json')) as f:
 
 
 def create_item(session):
-    price = random.uniform(1.0, 10.0)
+    price = random.randint(1, 10)
     with session.client.post(f"{STOCK_URL}/stock/item/create/{price}", name="/stock/item/create/[price]",
                              catch_response=True) as response:
         try:
@@ -42,7 +42,7 @@ def create_user(session):
 
 
 def add_balance_to_user(session):
-    balance_to_add: float = random.uniform(10000.0, 100000.0)
+    balance_to_add: float = random.randint(10000, 100000)
     session.client.post(f"{PAYMENT_URL}/payment/add_funds/{session.user_id}/{balance_to_add}",
                         name="/payment/add_funds/[user_id]/[amount]")
 
