@@ -50,12 +50,12 @@ async def create_orders(session, item_ids, user_ids, number_of_orders):
         orders_user_id.append(user_id)
         create_order_url = f"{ORDER_URL}/orders/create/{user_id}"
         tasks.append(asyncio.ensure_future(create_order(session, create_order_url)))
-    order_ids = await asyncio.gather(*tasks)
+    order_ids = list(await asyncio.gather(*tasks))
     tasks = []
     # Add items
     for order_id in order_ids:
         item_id = random.choice(item_ids)
-        create_item_url = f"{ORDER_URL}/orders/addItem/{order_id}/{item_id}"
+        create_item_url = f"{ORDER_URL}/orders/addItem/{order_id}/{item_id}/1"
         tasks.append(asyncio.ensure_future(post_and_get_status(session, create_item_url)))
     await asyncio.gather(*tasks)
     return order_ids, orders_user_id

@@ -41,7 +41,7 @@ async def create_items(session, number_of_items: int, stock: int, price: int) ->
     for _ in range(number_of_items):
         create_item_url = f"{STOCK_URL}/stock/item/create/{price}"
         tasks.append(asyncio.ensure_future(post_and_get_field(session, create_item_url, 'item_id')))
-    item_ids : List[str] = await asyncio.gather(*tasks)
+    item_ids: List[str] = list(await asyncio.gather(*tasks))
     tasks = []
     # Add stock
     for item_id in item_ids:
@@ -57,7 +57,7 @@ async def create_users(session, number_of_users: int, credit: int) -> List[str]:
     for _ in range(number_of_users):
         create_user_url = f"{PAYMENT_URL}/payment/create_user"
         tasks.append(asyncio.ensure_future(post_and_get_field(session, create_user_url, 'user_id')))
-    user_ids: List[str] = await asyncio.gather(*tasks)
+    user_ids: List[str] = list(await asyncio.gather(*tasks))
     tasks = []
     # Add funds
     for user_id in user_ids:

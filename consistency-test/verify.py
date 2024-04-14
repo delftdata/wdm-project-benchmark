@@ -36,7 +36,7 @@ async def get_user_credit_dict(session, user_id_list: List[str]) -> Dict[str, in
     for user_id in user_id_list:
         create_item_url = f"{PAYMENT_URL}/payment/find_user/{user_id}"
         tasks.append(asyncio.ensure_future(get_and_get_field(session, create_item_url, 'credit', user_id)))
-    user_id_credit: List[Tuple[str, int]] = await asyncio.gather(*tasks)
+    user_id_credit: List[Tuple[str, int]] = list(await asyncio.gather(*tasks))
     return dict(user_id_credit)
 
 
@@ -46,7 +46,7 @@ async def get_item_stock_dict(session, item_id_list: Union[List[str], str]) -> D
     for item_id in item_id_list:
         create_item_url = f"{STOCK_URL}/stock/find/{item_id}"
         tasks.append(asyncio.ensure_future(get_and_get_field(session, create_item_url, 'stock', item_id)))
-    item_id_stock: List[Tuple[str, int]] = await asyncio.gather(*tasks)
+    item_id_stock: List[Tuple[str, int]] = list(await asyncio.gather(*tasks))
     return dict(item_id_stock)
 
 
