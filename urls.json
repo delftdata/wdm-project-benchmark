@@ -1,5 +1,5 @@
 {
-  "ORDER_URL" : "http://127.0.0.1:5000",
-  "PAYMENT_URL" : "http://127.0.0.1:5001",
-  "STOCK_URL" : "http://127.0.0.1:5002"
+  "ORDER_URL" : "http://localhost:8000",
+  "PAYMENT_URL" : "http://localhost:8000",
+  "STOCK_URL" : "http://localhost:8000"
 }
