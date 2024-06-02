@@ -34,13 +34,13 @@ async def populate_databases():
             await resp.json()
         logger.info("Users created")
         logger.info("Batch creating items ...")
-        url: str = (f"{PAYMENT_URL}/stock/batch_init/"
+        url: str = (f"{STOCK_URL}/stock/batch_init/"
                     f"{NUMBER_0F_ITEMS}/{ITEM_STARTING_STOCK}/{ITEM_PRICE}")
         async with session.post(url) as resp:
             await resp.json()
         logger.info("Items created")
         logger.info("Batch creating orders ...")
-        url: str = (f"{PAYMENT_URL}/orders/batch_init/"
+        url: str = (f"{ORDER_URL}/orders/batch_init/"
                     f"{NUMBER_OF_ORDERS}/{NUMBER_0F_ITEMS}/{NUMBER_OF_USERS}/{ITEM_PRICE}")
         async with session.post(url) as resp:
             await resp.json()
